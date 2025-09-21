@@ -1,16 +1,30 @@
 import { Redis } from '@upstash/redis'
 
-// Configuração do Redis para cache
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-})
+// Configuração do Redis para cache - só inicializar se as env vars existirem
+const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN 
+  ? new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    })
+  : null;
+
+// Helper function to ensure Redis is available
+function ensureRedis() {
+  if (!redis || !process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    console.warn('Redis not configured, using fallback cache');
+    return null;
+  }
+  return redis;
+}
 
 export class CacheManager {
   // Cache de usuário
   static async cacheUser(userId: string, userData: any, ttl = 3600) {
     try {
-      await redis.setex(`user:${userId}`, ttl, JSON.stringify(userData))
+      const client = ensureRedis();
+      if (!client) return; // Gracefully handle missing Redis
+      
+      await client.setex(`user:${userId}`, ttl, JSON.stringify(userData))
     } catch (error) {
       console.error('Cache error:', error)
     }
@@ -18,7 +32,10 @@ export class CacheManager {
 
   static async getCachedUser(userId: string) {
     try {
-      const cached = await redis.get(`user:${userId}`)
+      const client = ensureRedis();
+      if (!client) return null;
+      
+      const cached = await client.get(`user:${userId}`)
       return cached ? JSON.parse(cached as string) : null
     } catch (error) {
       console.error('Cache retrieval error:', error)
@@ -29,7 +46,10 @@ export class CacheManager {
   // Cache de links
   static async cacheUserLinks(userId: string, links: any[], ttl = 1800) {
     try {
-      await redis.setex(`links:${userId}`, ttl, JSON.stringify(links))
+      const client = ensureRedis();
+      if (!client) return;
+      
+      await client.setex(`links:${userId}`, ttl, JSON.stringify(links))
     } catch (error) {
       console.error('Cache error:', error)
     }
@@ -37,7 +57,10 @@ export class CacheManager {
 
   static async getCachedUserLinks(userId: string) {
     try {
-      const cached = await redis.get(`links:${userId}`)
+      const client = ensureRedis();
+      if (!client) return null;
+      
+      const cached = await client.get(`links:${userId}`)
       return cached ? JSON.parse(cached as string) : null
     } catch (error) {
       console.error('Cache retrieval error:', error)
@@ -48,7 +71,10 @@ export class CacheManager {
   // Cache de perfil público
   static async cachePublicProfile(username: string, profileData: any, ttl = 1800) {
     try {
-      await redis.setex(`profile:${username}`, ttl, JSON.stringify(profileData))
+      const client = ensureRedis();
+      if (!client) return;
+      
+      await client.setex(`profile:${username}`, ttl, JSON.stringify(profileData))
     } catch (error) {
       console.error('Cache error:', error)
     }
@@ -56,7 +82,10 @@ export class CacheManager {
 
   static async getCachedPublicProfile(username: string) {
     try {
-      const cached = await redis.get(`profile:${username}`)
+      const client = ensureRedis();
+      if (!client) return null;
+      
+      const cached = await client.get(`profile:${username}`)
       return cached ? JSON.parse(cached as string) : null
     } catch (error) {
       console.error('Cache retrieval error:', error)
@@ -67,7 +96,10 @@ export class CacheManager {
   // Invalidar cache
   static async invalidateUserCache(userId: string) {
     try {
-      const pipeline = redis.pipeline()
+      const client = ensureRedis();
+      if (!client) return;
+      
+      const pipeline = client.pipeline()
       pipeline.del(`user:${userId}`)
       pipeline.del(`links:${userId}`)
       await pipeline.exec()
@@ -78,7 +110,10 @@ export class CacheManager {
 
   static async invalidateProfileCache(username: string) {
     try {
-      await redis.del(`profile:${username}`)
+      const client = ensureRedis();
+      if (!client) return;
+      
+      await client.del(`profile:${username}`)
     } catch (error) {
       console.error('Cache invalidation error:', error)
     }
@@ -87,9 +122,12 @@ export class CacheManager {
   // Rate limiting
   static async checkRateLimit(key: string, limit = 100, window = 60) {
     try {
-      const current = await redis.incr(key)
+      const client = ensureRedis();
+      if (!client) return true; // Allow if Redis not available
+      
+      const current = await client.incr(key)
       if (current === 1) {
-        await redis.expire(key, window)
+        await client.expire(key, window)
       }
       return current <= limit
     } catch (error) {
@@ -99,5 +137,6 @@ export class CacheManager {
   }
 }
 
+// Export both the class and a default cache instance
 export { redis }
-
+export const cache = CacheManager; // Add this export for compatibility
