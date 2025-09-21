@@ -1,13 +1,20 @@
 import Stripe from 'stripe'
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not set')
-}
-
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+// Não verificar a STRIPE_SECRET_KEY durante o build - só em runtime
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2024-12-18.acacia',
   typescript: true,
-})
+}) : null;
+
+// Helper function to ensure Stripe is configured
+function ensureStripe() {
+  if (!stripe || !process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is not configured. Please add it to your environment variables.');
+  }
+  return stripe;
+}
+
+export { stripe }
 
 // Pricing Plans Configuration
 export const PRICING_PLANS = {
@@ -103,9 +110,15 @@ export type PlanType = keyof typeof PRICING_PLANS
 
 // Stripe Helper Functions
 export class StripeService {
+  // Get stripe instance
+  static get stripe() {
+    return ensureStripe();
+  }
+
   // Create customer
   static async createCustomer(email: string, name?: string, metadata?: Record<string, string>) {
-    return await stripe.customers.create({
+    const stripeClient = ensureStripe();
+    return await stripeClient.customers.create({
       email,
       name,
       metadata
@@ -114,7 +127,8 @@ export class StripeService {
 
   // Create subscription
   static async createSubscription(customerId: string, priceId: string, metadata?: Record<string, string>) {
-    return await stripe.subscriptions.create({
+    const stripeClient = ensureStripe();
+    return await stripeClient.subscriptions.create({
       customer: customerId,
       items: [{ price: priceId }],
       payment_behavior: 'default_incomplete',
@@ -132,7 +146,8 @@ export class StripeService {
     cancelUrl: string,
     metadata?: Record<string, string>
   ) {
-    return await stripe.checkout.sessions.create({
+    const stripeClient = ensureStripe();
+    return await stripeClient.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
       line_items: [
@@ -155,7 +170,8 @@ export class StripeService {
     customerId?: string,
     metadata?: Record<string, string>
   ) {
-    return await stripe.paymentIntents.create({
+    const stripeClient = ensureStripe();
+    return await stripeClient.paymentIntents.create({
       amount: Math.round(amount * 100), // Convert to cents
       currency,
       customer: customerId,
@@ -168,7 +184,8 @@ export class StripeService {
 
   // Create product
   static async createProduct(name: string, description?: string, images?: string[]) {
-    return await stripe.products.create({
+    const stripeClient = ensureStripe();
+    return await stripeClient.products.create({
       name,
       description,
       images,
@@ -185,6 +202,7 @@ export class StripeService {
     currency: string = 'usd',
     type: 'one_time' | 'recurring' = 'one_time'
   ) {
+    const stripeClient = ensureStripe();
     const priceData: Stripe.PriceCreateParams = {
       product: productId,
       unit_amount: Math.round(amount * 100),
@@ -195,14 +213,15 @@ export class StripeService {
       priceData.recurring = { interval: 'month' }
     }
 
-    return await stripe.prices.create(priceData)
+    return await stripeClient.prices.create(priceData)
   }
 
   // Update subscription
   static async updateSubscription(subscriptionId: string, priceId: string) {
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+    const stripeClient = ensureStripe();
+    const subscription = await stripeClient.subscriptions.retrieve(subscriptionId)
     
-    return await stripe.subscriptions.update(subscriptionId, {
+    return await stripeClient.subscriptions.update(subscriptionId, {
       items: [{
         id: subscription.items.data[0].id,
         price: priceId,
@@ -213,18 +232,20 @@ export class StripeService {
 
   // Cancel subscription
   static async cancelSubscription(subscriptionId: string, atPeriodEnd: boolean = true) {
+    const stripeClient = ensureStripe();
     if (atPeriodEnd) {
-      return await stripe.subscriptions.update(subscriptionId, {
+      return await stripeClient.subscriptions.update(subscriptionId, {
         cancel_at_period_end: true
       })
     } else {
-      return await stripe.subscriptions.cancel(subscriptionId)
+      return await stripeClient.subscriptions.cancel(subscriptionId)
     }
   }
 
   // Get customer portal URL
   static async createCustomerPortal(customerId: string, returnUrl: string) {
-    return await stripe.billingPortal.sessions.create({
+    const stripeClient = ensureStripe();
+    return await stripeClient.billingPortal.sessions.create({
       customer: customerId,
       return_url: returnUrl,
     })
@@ -232,17 +253,19 @@ export class StripeService {
 
   // Verify webhook signature
   static verifyWebhookSignature(payload: string, signature: string) {
+    const stripeClient = ensureStripe();
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
     if (!webhookSecret) {
       throw new Error('STRIPE_WEBHOOK_SECRET is not set')
     }
 
-    return stripe.webhooks.constructEvent(payload, signature, webhookSecret)
+    return stripeClient.webhooks.constructEvent(payload, signature, webhookSecret)
   }
 
   // Get usage-based billing
   static async createUsageRecord(subscriptionItemId: string, quantity: number) {
-    return await stripe.subscriptionItems.createUsageRecord(subscriptionItemId, {
+    const stripeClient = ensureStripe();
+    return await stripeClient.subscriptionItems.createUsageRecord(subscriptionItemId, {
       quantity,
       timestamp: Math.floor(Date.now() / 1000)
     })
@@ -250,8 +273,10 @@ export class StripeService {
 
   // Create invoice for one-time charges
   static async createInvoice(customerId: string, description: string, amount: number) {
+    const stripeClient = ensureStripe();
+    
     // Create invoice item
-    await stripe.invoiceItems.create({
+    await stripeClient.invoiceItems.create({
       customer: customerId,
       amount: Math.round(amount * 100),
       currency: 'usd',
@@ -259,12 +284,12 @@ export class StripeService {
     })
 
     // Create and finalize invoice
-    const invoice = await stripe.invoices.create({
+    const invoice = await stripeClient.invoices.create({
       customer: customerId,
       auto_advance: true
     })
 
-    return await stripe.invoices.finalizeInvoice(invoice.id)
+    return await stripeClient.invoices.finalizeInvoice(invoice.id)
   }
 }
 
@@ -278,16 +303,18 @@ export class EcommerceService {
     cancelUrl: string,
     metadata?: Record<string, string>
   ) {
+    const stripeClient = ensureStripe();
+    
     // Create line items
     const lineItems = await Promise.all(
       products.map(async (product) => {
         // Create a price for this specific product if not exists
-        const stripeProduct = await stripe.products.create({
+        const stripeProduct = await stripeClient.products.create({
           name: product.name,
           metadata: { productId: product.id }
         })
 
-        const price = await stripe.prices.create({
+        const price = await stripeClient.prices.create({
           product: stripeProduct.id,
           unit_amount: Math.round(product.price * 100),
           currency: 'usd'
@@ -300,7 +327,7 @@ export class EcommerceService {
       })
     )
 
-    return await stripe.checkout.sessions.create({
+    return await stripeClient.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
@@ -321,7 +348,8 @@ export class EcommerceService {
     cancelUrl: string,
     metadata?: Record<string, string>
   ) {
-    return await stripe.checkout.sessions.create({
+    const stripeClient = ensureStripe();
+    return await stripeClient.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
         price_data: {
@@ -351,7 +379,8 @@ export class EcommerceService {
     cancelUrl: string,
     metadata?: Record<string, string>
   ) {
-    return await stripe.checkout.sessions.create({
+    const stripeClient = ensureStripe();
+    return await stripeClient.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
         price_data: {
@@ -380,4 +409,3 @@ export class EcommerceService {
     })
   }
 }
-
