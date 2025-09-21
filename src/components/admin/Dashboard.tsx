@@ -23,9 +23,29 @@ import {
 
 interface DashboardProps {
   user: User & {
-    pages: any[]
-    links: any[]
-    socials: any[]
+    pages: Array<{
+      id: string
+      title: string
+      blocks: Array<{
+        id: string
+        title: string
+        type: string
+        clicks: number
+      }>
+    }>
+    links: Array<{
+      id: string
+      title: string
+      url: string
+      description?: string
+      clicks: number
+    }>
+    socials: Array<{
+      id: string
+      platform: string
+      username: string
+      url: string
+    }>
   }
 }
 
@@ -136,7 +156,7 @@ export function Dashboard({ user }: DashboardProps) {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {user.links?.slice(0, 5).map((link: any, index: number) => (
+                      {user.links?.slice(0, 5).map((link, index: number) => (
                         <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <div className="flex items-center space-x-3">
                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>

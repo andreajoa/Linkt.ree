@@ -19,9 +19,20 @@ import {
 
 interface SettingsProps {
   user: User & {
-    pages: any[]
-    links: any[]
-    socials: any[]
+    pages: Array<{
+      id: string
+      title: string
+    }>
+    links: Array<{
+      id: string
+      title: string
+      url: string
+    }>
+    socials: Array<{
+      id: string
+      platform: string
+      username: string
+    }>
   }
 }
 
@@ -221,7 +232,7 @@ export function Settings({ user }: SettingsProps) {
                 <li>1. Acesse o painel do seu provedor de domínio</li>
                 <li>2. Crie um registro CNAME apontando para linktreepro.com</li>
                 <li>3. Aguarde a propagação (até 24h)</li>
-                <li>4. Clique em "Verificar" para confirmar</li>
+                <li>4. Clique em &quot;Verificar&quot; para confirmar</li>
               </ol>
             </div>
 

@@ -19,9 +19,20 @@ import {
 
 interface AnalyticsProps {
   user: User & {
-    pages: any[]
-    links: any[]
-    socials: any[]
+    pages: Array<{
+      id: string
+      title: string
+    }>
+    links: Array<{
+      id: string
+      title: string
+      url: string
+    }>
+    socials: Array<{
+      id: string
+      platform: string
+      username: string
+    }>
   }
 }
 

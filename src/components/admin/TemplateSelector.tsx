@@ -3,14 +3,24 @@
 import { useState } from 'react'
 import { User } from '@prisma/client'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { getTemplate } from '@/lib/templates/registry'
+import { Card, CardContent } from '@/components/ui/card'
 
 interface TemplateSelectorProps {
   user: User & {
-    pages: any[]
-    links: any[]
-    socials: any[]
+    pages: Array<{
+      id: string
+      title: string
+    }>
+    links: Array<{
+      id: string
+      title: string
+      url: string
+    }>
+    socials: Array<{
+      id: string
+      platform: string
+      username: string
+    }>
   }
 }
 

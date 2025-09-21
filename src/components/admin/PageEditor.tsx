@@ -20,15 +20,35 @@ import {
 
 interface PageEditorProps {
   user: User & {
-    pages: any[]
-    links: any[]
-    socials: any[]
+    pages: Array<{
+      id: string
+      title: string
+      blocks: Array<{
+        id: string
+        title: string
+        type: string
+        clicks: number
+      }>
+    }>
+    links: Array<{
+      id: string
+      title: string
+      url: string
+      description?: string
+      clicks: number
+    }>
+    socials: Array<{
+      id: string
+      platform: string
+      username: string
+      url: string
+    }>
   }
 }
 
 export function PageEditor({ user }: PageEditorProps) {
-  const [links, setLinks] = useState(user.links || [])
-  const [socials, setSocials] = useState(user.socials || [])
+  const [links] = useState(user.links || [])
+  const [socials] = useState(user.socials || [])
 
   const socialPlatforms = [
     { id: 'instagram', name: 'Instagram', icon: Instagram, color: 'bg-gradient-to-r from-purple-500 to-pink-500' },
@@ -75,7 +95,7 @@ export function PageEditor({ user }: PageEditorProps) {
             </div>
           ) : (
             <div className="space-y-3">
-              {links.map((link: any, index: number) => (
+              {links.map((link, index: number) => (
                 <div key={index} className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                   <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
                   <div className="flex-1">
@@ -117,7 +137,7 @@ export function PageEditor({ user }: PageEditorProps) {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {socialPlatforms.map((platform) => {
-              const social = socials.find((s: any) => s.platform === platform.id)
+              const social = socials.find((s) => s.platform === platform.id)
               return (
                 <div
                   key={platform.id}
@@ -173,7 +193,7 @@ export function PageEditor({ user }: PageEditorProps) {
               
               {links.length > 0 && (
                 <div className="space-y-2 max-w-sm mx-auto">
-                  {links.slice(0, 3).map((link: any, index: number) => (
+                  {links.slice(0, 3).map((link, index: number) => (
                     <div key={index} className="bg-white rounded-lg p-3 shadow-sm">
                       <span className="text-sm font-medium">{link.title}</span>
                     </div>
