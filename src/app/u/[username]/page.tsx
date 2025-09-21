@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { TemplateRenderer } from '@/components/templates/TemplateRenderer'
-import { prisma } from '@/lib/prisma'
+import { prisma, ensurePrisma } from '@/lib/prisma'
 import { CacheManager } from '@/lib/cache'
 import { LinkTreeAnalytics } from '@/lib/analytics'
 
@@ -13,26 +13,53 @@ interface PageProps {
 }
 
 async function getUserByUsername(username: string) {
+  // Verificar se o Prisma está disponível
+  if (!prisma) {
+    console.warn('Database not available - returning mock user')
+    return {
+      id: 'demo',
+      username: username,
+      name: username,
+      bio: 'Demo user - Database not configured',
+      avatar: null,
+      background: 'gradient-cosmic',
+      template: 'glassmorphism',
+      theme: 'dark',
+      links: [],
+      socials: []
+    }
+  }
+
   // Tentar buscar no cache primeiro
   let user = await CacheManager.getCachedPublicProfile(username)
   
   if (!user) {
-    user = await prisma.user.findUnique({
-      where: { username },
-      include: {
-        links: {
-          where: { isActive: true },
-          orderBy: { order: 'asc' }
-        },
-        socials: {
-          where: { isActive: true }
+    try {
+      user = await prisma.user.findUnique({
+        where: { username },
+        include: {
+          pages: {
+            where: { 
+              isPublic: true,
+              slug: username
+            },
+            include: {
+              blocks: {
+                where: { isActive: true },
+                orderBy: { position: 'asc' }
+              }
+            }
+          }
         }
-      }
-    })
+      })
 
-    if (user) {
-      // Cache por 30 minutos para perfis públicos
-      await CacheManager.cachePublicProfile(username, user, 1800)
+      if (user) {
+        // Cache por 30 minutos para perfis públicos
+        await CacheManager.cachePublicProfile(username, user, 1800)
+      }
+    } catch (error) {
+      console.error('Database error:', error)
+      return null
     }
   }
 
@@ -51,7 +78,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const title = `${user.name || user.username} - LinkTree Pro`
   const description = user.bio || `Veja todos os links de ${user.name || user.username} em um só lugar`
-  const imageUrl = user.image || user.avatar || `${process.env.NEXTAUTH_URL}/api/og?username=${user.username}`
+  const imageUrl = user.image || user.avatar || `/api/og?username=${user.username}`
 
   return {
     title,
@@ -60,7 +87,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       type: 'profile',
-      url: `${process.env.NEXTAUTH_URL}/${user.username}`,
+      url: `/${user.username}`,
       images: [
         {
           url: imageUrl,
@@ -82,29 +109,33 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       follow: true,
     },
     alternates: {
-      canonical: `${process.env.NEXTAUTH_URL}/${user.username}`,
+      canonical: `/${user.username}`,
     },
   }
 }
 
-async function handleLinkClick(linkId: string, metadata: any) {
+async function handleLinkClick(blockId: string, metadata: any) {
   'use server'
   
   try {
-    const link = await prisma.link.findUnique({
-      where: { id: linkId },
-      include: { user: true }
+    if (!prisma) return
+    
+    const block = await prisma.block.findUnique({
+      where: { id: blockId },
+      include: { page: { include: { user: true } } }
     })
 
-    if (!link) return
+    if (!block) return
 
-    // Rastrear o clique
-    await LinkTreeAnalytics.trackLinkClick(linkId, link.userId, metadata)
+    // Increment click count
+    await prisma.block.update({
+      where: { id: blockId },
+      data: { clicks: { increment: 1 } }
+    })
 
     // Invalidar cache do usuário
-    await CacheManager.invalidateUserCache(link.userId)
-    if (link.user.username) {
-      await CacheManager.invalidateProfileCache(link.user.username)
+    if (block.page.user.username) {
+      await CacheManager.invalidateProfileCache(block.page.user.username)
     }
   } catch (error) {
     console.error('Error tracking click:', error)
@@ -130,14 +161,14 @@ export default async function UserProfilePage({ params }: PageProps) {
       }>
         <TemplateRenderer 
           user={user}
-          onLinkClick={(linkId) => {
+          onLinkClick={(blockId) => {
             // Cliente-side tracking via API
             fetch('/api/track/click', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ linkId }),
+              body: JSON.stringify({ blockId }),
             }).catch(console.error)
           }}
         />
@@ -146,32 +177,36 @@ export default async function UserProfilePage({ params }: PageProps) {
   )
 }
 
-// Generate static params for popular users (ISR)
+// REMOVER generateStaticParams por enquanto para não quebrar o build
+// Generate static params for popular users (ISR) - DESABILITADO TEMPORARIAMENTE
 export async function generateStaticParams() {
-  const popularUsers = await prisma.user.findMany({
-    where: {
-      username: {
-        not: null
-      },
-      links: {
-        some: {
-          clicks: {
-            gt: 100 // Usuários com pelo menos 100 cliques
-          }
-        }
-      }
-    },
-    select: {
-      username: true
-    },
-    take: 100 // Gerar estático para os 100 usuários mais populares
-  })
+  // Retornar array vazio para não quebrar o build quando o banco não está configurado
+  try {
+    if (!prisma) {
+      console.warn('Database not available - skipping static generation')
+      return []
+    }
 
-  return popularUsers.map((user) => ({
-    username: user.username!,
-  }))
+    const popularUsers = await prisma.user.findMany({
+      where: {
+        username: {
+          not: null
+        }
+      },
+      select: {
+        username: true
+      },
+      take: 10 // Reduzir para evitar timeouts
+    })
+
+    return popularUsers.map((user) => ({
+      username: user.username!,
+    }))
+  } catch (error) {
+    console.error('Error in generateStaticParams:', error)
+    return []
+  }
 }
 
 // Revalidate every hour
 export const revalidate = 3600
-
