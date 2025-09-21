@@ -19,6 +19,14 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
   },
+  // Output configuration for Vercel
+  output: 'standalone',
+  // Disable static optimization for dynamic pages
+  trailingSlash: false,
+  // Skip build-time database connections
+  generateBuildId: async () => {
+    return 'build-' + Date.now()
+  },
 }
 
 module.exports = nextConfig

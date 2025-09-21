@@ -21,28 +21,29 @@ import {
 } from 'lucide-react'
 
 export default async function AdminPage() {
-  const session = await getServerSession(authOptions)
-  
-  if (!session?.user?.id) {
-    redirect('/api/auth/signin')
-  }
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      redirect('/api/auth/signin')
+    }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    include: {
-      pages: {
-        include: {
-          blocks: true
-        }
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: {
+        pages: {
+          include: {
+            blocks: true
+          }
+        },
+        links: true,
+        socials: true,
       },
-      links: true,
-      socials: true,
-    },
-  })
+    })
 
-  if (!user) {
-    redirect('/api/auth/signin')
-  }
+    if (!user) {
+      redirect('/api/auth/signin')
+    }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -104,4 +105,8 @@ export default async function AdminPage() {
       </main>
     </div>
   )
+  } catch (error) {
+    console.error('Error in AdminPage:', error)
+    redirect('/api/auth/signin')
+  }
 }

@@ -267,53 +267,58 @@ function LandingPage() {
 
 // Componente para usuários autenticados
 async function UserPage() {
-  const session = await getServerSession(authOptions)
-  
-  if (!session?.user?.id) {
-    return <LandingPage />
-  }
-
-  // Buscar dados do usuário com cache
-  const cacheKey = `user:${session.user.id}`
-  let user = await cache.get(cacheKey)
-  
-  if (!user) {
-    user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      include: {
-        links: true,
-        socials: true,
-        pages: true,
-      },
-    })
+  try {
+    const session = await getServerSession(authOptions)
     
-    if (user) {
-      await cache.set(cacheKey, user, 300) // Cache por 5 minutos
+    if (!session?.user?.id) {
+      return <LandingPage />
     }
-  }
 
-  if (!user) {
+    // Buscar dados do usuário com cache
+    const cacheKey = `user:${session.user.id}`
+    let user = await cache.get(cacheKey)
+    
+    if (!user) {
+      user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        include: {
+          links: true,
+          socials: true,
+          pages: true,
+        },
+      })
+      
+      if (user) {
+        await cache.set(cacheKey, user, 300) // Cache por 5 minutos
+      }
+    }
+
+    if (!user) {
+      return <LandingPage />
+    }
+
+    // Se o usuário tem uma página, mostrar ela
+    if (user.pages && user.pages.length > 0) {
+      const page = user.pages[0]
+      return (
+        <Suspense fallback={<div>Carregando...</div>}>
+          <TemplateRenderer 
+            user={user} 
+            onLinkClick={async (linkId: string) => {
+              // Implementar tracking de cliques
+              console.log('Link clicked:', linkId)
+            }}
+          />
+        </Suspense>
+      )
+    }
+
+    // Se não tem página, redirecionar para criação
+    redirect('/admin')
+  } catch (error) {
+    console.error('Error in UserPage:', error)
     return <LandingPage />
   }
-
-  // Se o usuário tem uma página, mostrar ela
-  if (user.pages && user.pages.length > 0) {
-    const page = user.pages[0]
-  return (
-      <Suspense fallback={<div>Carregando...</div>}>
-        <TemplateRenderer 
-          user={user} 
-          onLinkClick={async (linkId: string) => {
-            // Implementar tracking de cliques
-            console.log('Link clicked:', linkId)
-          }}
-        />
-      </Suspense>
-    )
-  }
-
-  // Se não tem página, redirecionar para criação
-  redirect('/admin')
 }
 
 export default function HomePage() {
