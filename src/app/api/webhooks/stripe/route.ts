@@ -94,7 +94,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
           currency: session.currency || 'usd',
           status: 'succeeded',
           type: metadata.type || 'one_time',
-          metadata: metadata as any
+          metadata: metadata as Record<string, unknown>
         }
       })
 
@@ -217,7 +217,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
   try {
     if (invoice.subscription) {
       // This is a subscription payment
-      const subscription = await StripeService.stripe.subscriptions.retrieve(
+      await StripeService.stripe.subscriptions.retrieve(
         invoice.subscription as string
       )
       
@@ -299,7 +299,7 @@ async function handleOneTimePaymentSucceeded(paymentIntent: Stripe.PaymentIntent
         currency: paymentIntent.currency,
         status: 'succeeded',
         type: metadata.type || 'one_time',
-        metadata: metadata as any
+        metadata: metadata as Record<string, unknown>
       }
     })
 
