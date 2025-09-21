@@ -1,228 +1,238 @@
-# 🚀 LinkTree Pro - Plataforma Escalável de Bio-Links
+# 🚀 LinkTree Pro - Plataforma Cutting-Edge
 
-Uma aplicação moderna e escalável para compartilhar todos os seus links em um só lugar, construída para suportar **milhões de usuários** com performance de nível empresarial.
+Uma plataforma moderna e escalável de "Link in Bio" com funcionalidades avançadas de IA, templates cutting-edge, sistema de pagamentos e analytics profissionais.
 
-![LinkTree Pro](https://img.shields.io/badge/LinkTree-Pro-purple?style=for-the-badge)
-![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)
-![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?style=for-the-badge&logo=prisma)
-![Vercel](https://img.shields.io/badge/Vercel-Deploy-black?style=for-the-badge&logo=vercel)
+## ✨ Funcionalidades
 
-## ✨ Características Principais
+### 🎨 Templates Cutting-Edge
+- **10 Templates Premium**: Glassmorphism, Neumorphism, Cyberpunk, Holographic, Synthwave, Liquid Morph, etc.
+- **Customização Avançada**: Cores, fontes, animações, backgrounds
+- **Responsivo** e otimizado para mobile
 
-### 🎨 Sistema de Templates Avançado
-- **7+ Templates Profissionais**: Glassmorphism, Minimal, Neon Cyber, Gradient Mesh Pro, Business Pro, Social Media Hub, Retro Wave
-- **Customização Completa**: Cores, fontes, layouts, animações
-- **Templates Premium**: Recursos exclusivos para usuários pagos
-- **Preview em Tempo Real**: Visualize mudanças instantaneamente
+### 🖱️ Editor Visual Drag & Drop
+- **Interface Webflow-like** com DND Kit
+- **12+ Tipos de Blocos**: Links, Social, E-commerce, Email, Calendar, QR Code, Streaming, etc.
+- **Preview em Tempo Real**
+- **Reordenação por arrastar**
 
-### ⚡ Performance de Nível Empresarial
-- **Lighthouse Score 90+**: Otimização completa de performance
-- **Multi-layer Caching**: Redis + CDN + Browser cache
-- **Image Optimization**: AVIF/WebP com lazy loading
-- **Code Splitting**: Carregamento otimizado de componentes
-- **ISR (Incremental Static Regeneration)**: Para perfis populares
+### 🤖 IA Integrada (OpenAI)
+- **Geração de Bio** automática
+- **Recomendações de Estilo** e cores
+- **Análise de Performance**
+- **Sugestões de Conteúdo**
+- **A/B Testing** inteligente
 
-### 🔐 Segurança & Escalabilidade
-- **Autenticação Robusta**: NextAuth.js com Google + GitHub
-- **Rate Limiting**: Proteção contra abuso
-- **Security Headers**: XSS, CSRF, Clickjacking protection
-- **PostgreSQL**: Banco de dados escalável
-- **Connection Pooling**: Para alta concorrência
+### 💳 Sistema de Pagamentos (Stripe)
+- **Checkout Sessions** completo
+- **Webhooks** para eventos
+- **Assinaturas e Produtos**
+- **Doações e Tips**
 
-### 📊 Analytics Avançados
-- **Rastreamento em Tempo Real**: Cliques, visualizações, engajamento
-- **Métricas Detalhadas**: Por país, dispositivo, browser
-- **Dashboard Completo**: Insights acionáveis
-- **Exportação de Dados**: Relatórios customizáveis
+### 📊 Analytics Profissionais
+- **Tracking em Tempo Real**
+- **Heatmaps de Cliques**
+- **Análise de Conversão**
+- **Cohort Analysis**
+- **A/B Testing** avançado
 
-## 🏗️ Arquitetura Técnica
+### 🔐 Autenticação e Segurança
+- **NextAuth.js** com Google + GitHub
+- **Rate Limiting** e Headers de Segurança
+- **Middleware** customizado
+- **GDPR Compliant**
 
-### Frontend
-```typescript
-Next.js 15 (App Router) + TypeScript
-├── Tailwind CSS (Styling)
-├── Framer Motion (Animations)  
-├── Radix UI (Components)
-├── React Hook Form + Zod (Forms)
-└── Lucide React (Icons)
-```
+### 🛒 E-commerce Nativo
+- **Produtos Digitais** e Físicos
+- **Carrinho Integrado**
+- **Inventory Tracking**
+- **Download Automático**
 
-### Backend & Database
-```typescript
-Next.js API Routes + Prisma ORM
-├── PostgreSQL (Primary Database)
-├── Redis (Cache & Rate Limiting)
-├── NextAuth.js (Authentication)
-└── Vercel Analytics (Monitoring)
-```
+### 📱 Social Media Integration
+- **Instagram, TikTok, YouTube, Twitter**
+- **Live Counters**
+- **Auto-preview** de posts
+- **OAuth Integration**
 
-### Infraestrutura
-```bash
-Vercel (Hosting & CDN)
-├── PlanetScale (Database)
-├── Upstash (Redis)
-├── CloudFlare (CDN)
-└── PostHog (Analytics)
-```
+## 🛠️ Stack Tecnológica
 
-## 🚀 Deploy Rápido (5 minutos)
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Backend**: Next.js API Routes, Prisma ORM
+- **Database**: PostgreSQL (produção) / SQLite (desenvolvimento)
+- **Cache**: Redis (Upstash)
+- **Auth**: NextAuth.js
+- **Payments**: Stripe
+- **AI**: OpenAI GPT-4
+- **Styling**: Tailwind CSS + Framer Motion
+- **Deploy**: Vercel
 
-### 1. Clone e Configure
-```bash
-git clone <repo-url>
-cd meu-linktree
-npm install
-cp .env.example .env.local
-```
+## 🚀 Deploy Rápido
 
-### 2. Configure Variáveis de Ambiente
+### Opção 1: Deploy no Vercel (Recomendado)
+
+1. **Fork este repositório** no GitHub
+2. **Conecte ao Vercel**:
+   ```bash
+   npx vercel
+   ```
+3. **Configure as variáveis de ambiente** no Vercel:
+   - `OPENAI_API_KEY`: Sua chave da OpenAI
+   - `NEXTAUTH_SECRET`: Uma string secreta aleatória
+   - `DATABASE_URL`: URL do PostgreSQL (PlanetScale recomendado)
+   - `STRIPE_SECRET_KEY`: Chave secreta do Stripe
+   - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`: Chave pública do Stripe
+
+### Opção 2: Deploy Manual
+
+1. **Clone o repositório**:
+   ```bash
+   git clone https://github.com/seu-usuario/linktree-pro.git
+   cd linktree-pro
+   ```
+
+2. **Instale as dependências**:
+   ```bash
+   npm install --legacy-peer-deps
+   ```
+
+3. **Configure o ambiente**:
+   ```bash
+   cp env-setup.txt .env.local
+   # Edite .env.local com suas chaves
+   ```
+
+4. **Configure o banco de dados**:
+   ```bash
+   npm run db:generate
+   npm run db:push
+   ```
+
+5. **Execute em desenvolvimento**:
+   ```bash
+   npm run dev
+   ```
+
+## 📋 Configuração das Variáveis de Ambiente
+
+### Obrigatórias
 ```env
-# Database
-DATABASE_URL="postgresql://..."
-DIRECT_URL="postgresql://..."
-
-# NextAuth
-NEXTAUTH_URL="https://yourapp.vercel.app"
-NEXTAUTH_SECRET="your-secret"
-
-# OAuth
-GOOGLE_CLIENT_ID="your-google-id"
-GOOGLE_CLIENT_SECRET="your-google-secret"
-
-# Redis
-UPSTASH_REDIS_REST_URL="https://..."
-UPSTASH_REDIS_REST_TOKEN="..."
+OPENAI_API_KEY=sk-or-v1-sua-chave-aqui
+NEXTAUTH_SECRET=seu-jwt-secret-super-secreto
+DATABASE_URL=postgresql://usuario:senha@host:porta/database
 ```
 
-### 3. Deploy Automatizado
+### Opcionais (para funcionalidades avançadas)
+```env
+# Stripe (para pagamentos)
+STRIPE_SECRET_KEY=sk_test_sua-chave-secreta
+STRIPE_WEBHOOK_SECRET=whsec_seu-webhook-secret
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_sua-chave-publica
+
+# OAuth (para login social)
+GOOGLE_CLIENT_ID=seu-google-client-id
+GOOGLE_CLIENT_SECRET=seu-google-client-secret
+GITHUB_ID=seu-github-client-id
+GITHUB_SECRET=seu-github-client-secret
+
+# Redis (para cache)
+UPSTASH_REDIS_REST_URL=sua-url-redis
+UPSTASH_REDIS_REST_TOKEN=seu-token-redis
+
+# Analytics
+NEXT_PUBLIC_POSTHOG_API_KEY=sua-chave-posthog
+NEXT_PUBLIC_POSTHOG_API_HOST=https://app.posthog.com
+```
+
+## 🗄️ Configuração do Banco de Dados
+
+### Para Desenvolvimento (SQLite)
 ```bash
-./deploy-vercel.sh
+npm run db:generate
+npm run db:push
 ```
 
-## 📈 Métricas de Performance
+### Para Produção (PostgreSQL)
+1. **Crie um banco PostgreSQL** (PlanetScale, Supabase, ou Railway)
+2. **Atualize `DATABASE_URL`** no `.env.local`
+3. **Execute as migrações**:
+   ```bash
+   npm run db:migrate
+   ```
 
-| Métrica | Atual | Target | Status |
-|---------|--------|--------|--------|
-| **Lighthouse** | 95/100 | 90+ | ✅ |
-| **First Contentful Paint** | 1.2s | <2s | ✅ |
-| **Time to Interactive** | 2.1s | <3s | ✅ |
-| **Concurrent Users** | 50k+ | 10k+ | ✅ |
-| **Database Response** | 45ms | <100ms | ✅ |
-| **Cache Hit Rate** | 94% | >90% | ✅ |
-
-## 💰 Estimativa de Custos (1M usuários/mês)
-
-| Serviço | Custo | Descrição |
-|---------|-------|-----------|
-| **Vercel Pro** | $20/mês | Hosting + CDN |
-| **PlanetScale** | $39/mês | PostgreSQL escalável |
-| **Upstash Redis** | $8/mês | Cache + Rate limiting |
-| **CloudFlare** | $20/mês | CDN global |
-| **PostHog** | $50/mês | Analytics avançado |
-| **Total** | **$137/mês** | **ROI: ~$50k/mês** |
-
-## 🎯 Templates Disponíveis
-
-### 🆓 Templates Gratuitos
-1. **Glassmorphism** - Efeito de vidro moderno
-2. **Minimal Clean** - Design limpo e profissional  
-3. **Neon Cyber** - Estilo cyberpunk com efeitos neon
-
-### 💎 Templates Premium
-4. **Gradient Mesh Pro** - Gradientes animados complexos
-5. **Business Professional** - Layout corporativo
-6. **Social Media Hub** - Otimizado para criadores
-7. **Retro Wave** - Estilo synthwave dos anos 80
-
-## 🛠️ Desenvolvimento Local
+## 🎯 Scripts Disponíveis
 
 ```bash
-# Instalar dependências
-npm install
+# Desenvolvimento
+npm run dev              # Inicia servidor de desenvolvimento
+npm run build            # Build para produção
+npm run start            # Inicia servidor de produção
 
-# Configurar banco de dados
-npx prisma migrate dev
-npx prisma generate
+# Banco de dados
+npm run db:generate      # Gera cliente Prisma
+npm run db:push          # Aplica schema ao banco
+npm run db:migrate       # Executa migrações
+npm run db:studio        # Interface visual do banco
 
-# Iniciar desenvolvimento
-npm run dev
+# Deploy
+./deploy-vercel.sh       # Deploy automatizado no Vercel
 
-# Build de produção
-npm run build
-npm start
+# Stripe (desenvolvimento)
+npm run stripe:listen    # Escuta webhooks do Stripe
 ```
 
-## 📊 Analytics e Insights
+## 📁 Estrutura do Projeto
 
-### Métricas Rastreadas
-- ✅ Cliques em links (tempo real)
-- ✅ Visualizações de perfil
-- ✅ Dados demográficos (país, cidade)
-- ✅ Informações de dispositivo
-- ✅ Referrers e fontes de tráfego
-- ✅ Horários de pico de atividade
-
-### Dashboard Analytics
-```typescript
-// Exemplo de uso da API
-const analytics = await fetch('/api/analytics/userId?days=30')
-const data = await analytics.json()
-
-console.log(data.totalClicks)     // 15,234
-console.log(data.uniqueVisitors)  // 8,967
-console.log(data.topLinks)        // Array com top 5 links
+```
+src/
+├── app/                    # App Router do Next.js
+│   ├── api/               # API Routes
+│   ├── u/[username]/      # Páginas públicas dos usuários
+│   └── admin/             # Painel administrativo
+├── components/            # Componentes React
+│   ├── editor/            # Editor drag & drop
+│   ├── templates/         # Templates de páginas
+│   └── ui/                # Componentes base
+├── lib/                   # Utilities e configurações
+│   ├── ai.ts              # Integração OpenAI
+│   ├── auth.ts            # Configuração NextAuth
+│   ├── prisma.ts          # Cliente Prisma
+│   └── stripe.ts          # Integração Stripe
+└── store/                 # Estado global (Zustand)
 ```
 
-## 🔧 Configurações Avançadas
+## 🔧 Configuração Adicional
 
-### Rate Limiting
-```typescript
-// Configuração personalizada por rota
-const rateLimits = {
-  '/api/track/click': { requests: 100, window: 60 }, // 100/min
-  '/api/user/profile': { requests: 30, window: 60 },  // 30/min
-  '/api/analytics/*': { requests: 20, window: 60 }    // 20/min
-}
-```
+### Stripe Webhooks
+1. **Configure webhooks** no dashboard do Stripe
+2. **URL**: `https://seu-dominio.com/api/webhooks/stripe`
+3. **Eventos**: `checkout.session.completed`, `customer.subscription.*`
 
-### Cache Strategy
-```typescript
-// Multi-layer caching
-1. Browser Cache (static assets): 1 year
-2. CDN Cache (pages): 1 hour
-3. Redis Cache (user data): 30 minutes
-4. Database Connection Pool: 100 connections
-```
+### OAuth Providers
+1. **Google**: Configure no Google Cloud Console
+2. **GitHub**: Configure no GitHub Developer Settings
 
-## 🌐 Deploy em Produção
+### Domínio Customizado
+1. **Configure no Vercel** ou seu provedor
+2. **Atualize `NEXTAUTH_URL`** com o domínio correto
 
-### Checklist de Deploy
-- [ ] ✅ Configurar PostgreSQL (PlanetScale)
-- [ ] ✅ Configurar Redis (Upstash)
-- [ ] ✅ Configurar OAuth (Google + GitHub)
-- [ ] ✅ Configurar Analytics (PostHog)
-- [ ] ✅ Configurar domínio customizado
-- [ ] ✅ Configurar monitoramento (Sentry)
-- [ ] ✅ Executar testes de carga
-- [ ] ✅ Configurar backups automáticos
+## 🚀 Performance e Escalabilidade
 
-### Comandos de Deploy
-```bash
-# Deploy staging
-vercel
+A aplicação está otimizada para **milhões de usuários**:
 
-# Deploy produção
-vercel --prod
+- **Cache Redis** multi-layer
+- **CDN** otimizado (Vercel Edge Network)
+- **Database indexing** e particionamento
+- **Rate limiting** avançado
+- **Image optimization** automática
+- **Bundle splitting** inteligente
 
-# Executar migrações
-npx prisma migrate deploy
+## 📊 Monitoramento
 
-# Verificar saúde da aplicação
-curl https://yourapp.vercel.app/api/health
-```
+- **Vercel Analytics** para performance
+- **Sentry** para error tracking (configurável)
+- **PostHog** para analytics de produto
+- **Logs estruturados** para debugging
 
-## 🤝 Contribuindo
+## 🤝 Contribuição
 
 1. Fork o projeto
 2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
@@ -230,16 +240,16 @@ curl https://yourapp.vercel.app/api/health
 4. Push para a branch (`git push origin feature/AmazingFeature`)
 5. Abra um Pull Request
 
-## 📝 Licença
+## 📄 Licença
 
-Este projeto está licenciado sob a MIT License - veja o arquivo [LICENSE](LICENSE) para detalhes.
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
 
-## 🎉 Créditos
+## 🆘 Suporte
 
-Desenvolvido com ❤️ para ser uma alternativa escalável e moderna ao Linktree oficial.
+- **Documentação**: [Wiki do projeto](https://github.com/seu-usuario/linktree-pro/wiki)
+- **Issues**: [GitHub Issues](https://github.com/seu-usuario/linktree-pro/issues)
+- **Discord**: [LinkTree Pro Community](https://discord.gg/linktree-pro)
 
 ---
 
-**🚀 Pronto para escalar para milhões de usuários!**
-
-Para suporte técnico ou dúvidas, abra uma issue no GitHub.
+**Desenvolvido com ❤️ usando as mais modernas tecnologias web**
