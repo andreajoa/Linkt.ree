@@ -1,0 +1,190 @@
+{
+  "project_name": "Meu LinkTree",
+  "description": "Uma aplicação moderna para compartilhar todos os seus links em um só lugar, similar ao Linktree oficial",
+  "tech_stack": {
+    "frontend": {
+      "framework": "Next.js 15.5.3",
+      "language": "TypeScript",
+      "styling": "Tailwind CSS v4",
+      "ui_components": "Radix UI",
+      "animations": "Framer Motion 12.23.12",
+      "icons": "Lucide React",
+      "themes": "next-themes",
+      "forms": "React Hook Form + Zod validation"
+    },
+    "backend": {
+      "database": "SQLite with Prisma ORM",
+      "runtime": "Node.js",
+      "api": "Next.js API Routes"
+    },
+    "deployment": {
+      "platform": "Vercel",
+      "config": "vercel.json presente"
+    }
+  },
+  "key_features": {
+    "user_management": {
+      "profile_customization": true,
+      "bio_and_avatar": true,
+      "social_links": true,
+      "username_system": true
+    },
+    "link_management": {
+      "add_edit_delete_links": true,
+      "link_analytics": true,
+      "link_ordering": true,
+      "link_visibility_toggle": true,
+      "custom_descriptions": true,
+      "custom_icons": true
+    },
+    "design_system": {
+      "multiple_templates": [
+        "default",
+        "glassmorphism", 
+        "neon",
+        "minimal",
+        "gradient",
+        "dark"
+      ],
+      "background_options": [
+        "cosmic",
+        "sunset", 
+        "ocean",
+        "forest",
+        "rose",
+        "monochrome"
+      ],
+      "theme_switching": "light/dark modes",
+      "real_time_preview": true
+    },
+    "admin_panel": {
+      "comprehensive_dashboard": true,
+      "drag_drop_reordering": true,
+      "live_preview": true,
+      "analytics_dashboard": true,
+      "design_customization": true
+    },
+    "responsive_design": {
+      "mobile_first": true,
+      "desktop_admin": true,
+      "mobile_preview": true
+    }
+  },
+  "database_schema": {
+    "models": [
+      {
+        "name": "User",
+        "fields": [
+          "id (String, CUID)",
+          "username (String, unique)",
+          "name (String, optional)",
+          "bio (String, optional)",
+          "avatar (String, optional)",
+          "background (String, optional)",
+          "template (String, default: 'default')",
+          "theme (String, default: 'light')",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)"
+        ],
+        "relations": ["links (Link[])", "socials (Social[])"]
+      },
+      {
+        "name": "Link", 
+        "fields": [
+          "id (String, CUID)",
+          "title (String)",
+          "url (String)",
+          "description (String, optional)",
+          "icon (String, optional)",
+          "image (String, optional)",
+          "isActive (Boolean, default: true)",
+          "order (Int, default: 0)",
+          "clicks (Int, default: 0)",
+          "userId (String)",
+          "createdAt (DateTime)",
+          "updatedAt (DateTime)"
+        ],
+        "relations": ["user (User)"]
+      },
+      {
+        "name": "Social",
+        "fields": [
+          "id (String, CUID)",
+          "platform (String)",
+          "url (String)",
+          "username (String, optional)",
+          "isActive (Boolean, default: true)",
+          "userId (String)"
+        ],
+        "relations": ["user (User)"]
+      }
+    ]
+  },
+  "architecture": {
+    "patterns": [
+      "Client-side rendering with SSG capabilities",
+      "Component-based architecture",
+      "Custom hooks for state management",
+      "Modular design system"
+    ],
+    "file_structure": {
+      "src/app": "Next.js App Router structure",
+      "src/components": "Reusable UI components",
+      "src/lib": "Utilities and database connection",
+      "src/types": "TypeScript type definitions",
+      "prisma": "Database schema and migrations"
+    }
+  },
+  "current_limitations": {
+    "scalability": [
+      "SQLite database não adequada para produção em escala",
+      "Falta de cache layer",
+      "Sem CDN para assets",
+      "Sem otimização de imagens"
+    ],
+    "security": [
+      "Falta de autenticação/autorização",
+      "Sem rate limiting",
+      "Sem validação de entrada robusta",
+      "Sem HTTPS enforcement"
+    ],
+    "features": [
+      "Sem sistema de analytics avançado",
+      "Sem A/B testing para templates",
+      "Sem integração com redes sociais",
+      "Sem sistema de backup",
+      "Sem multi-idioma"
+    ],
+    "performance": [
+      "Sem lazy loading de componentes",
+      "Sem otimização de bundle",
+      "Sem service workers/PWA",
+      "Sem compressão de imagens"
+    ]
+  },
+  "improvement_opportunities": {
+    "high_priority": [
+      "Migrar para PostgreSQL com connection pooling",
+      "Implementar autenticação (NextAuth.js)",
+      "Adicionar Redis para cache",
+      "Implementar CDN para assets",
+      "Adicionar analytics avançados",
+      "Implementar rate limiting"
+    ],
+    "medium_priority": [
+      "PWA capabilities",
+      "Lazy loading e code splitting",
+      "Otimização de imagens (next/image)",
+      "SEO otimization",
+      "Internacionalização",
+      "A/B testing framework"
+    ],
+    "low_priority": [
+      "Integração com redes sociais",
+      "Sistema de templates mais avançado",
+      "Drag & drop melhorado",
+      "Modo offline",
+      "Dark mode automático"
+    ]
+  }
+}

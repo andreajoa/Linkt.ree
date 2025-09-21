@@ -1,0 +1,15 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "executionArgs": {
+    "projectName": "meu-linktree",
+    "projectPath": "/Users/andrealmeida/Downloads/linkt.ree/meu-linktree",
+    "testIds": [],
+    "additionalInstruction": "Foque em testar a escalabilidade, performance, sistema de templates, responsividade e funcionalidades core do LinkTree. Teste especialmente o painel administrativo, sistema de links, personalização visual e analytics.",
+    "envs": {
+      "API_KEY": "sk-user-mbXk1vPRNJbqZZ9s10A68jXxezrw_6jbFFEhm5d_HL3foZuys02S7r3EFpzJmCERZ0U77X8o2ptduboIevizYFCW8EisypXvF3rHQZur6u31-ioogaUxT5I8LepDgzx9OO0"
+    }
+  }
+}
