@@ -367,3 +367,4 @@ export const useEditorActions = () => useAppStore(state => ({
   setZoom: state.setZoom,
   setShowGrid: state.setShowGrid
 }))
+

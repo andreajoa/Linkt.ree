@@ -66,3 +66,4 @@ else
     echo -e "${RED}❌ Erro no deploy. Verifique os logs acima.${NC}"
     exit 1
 fi
+

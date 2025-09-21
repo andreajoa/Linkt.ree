@@ -215,3 +215,4 @@ Desenvolver uma plataforma de bio-links escalável e moderna que permita aos usu
 **Status**: 🔄 Em Desenvolvimento
 **Última Atualização**: Setembro 2025
 **Responsável**: Equipe de Produto
+
