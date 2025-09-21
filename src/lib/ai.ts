@@ -1,13 +1,18 @@
 import OpenAI from 'openai'
 import { prisma } from './prisma'
 
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error('OPENAI_API_KEY is not set')
-}
-
-const openai = new OpenAI({
+// Não verificar a API key durante o build - só em runtime
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-})
+}) : null;
+
+// Helper function to check if OpenAI is available
+function ensureOpenAI() {
+  if (!openai || !process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not configured. Please add it to your environment variables.');
+  }
+  return openai;
+}
 
 // Export individual functions for easier importing
 export async function generateBio(userData: { name: string; interests?: string[]; socialMedia?: string[] }): Promise<string> {
@@ -49,6 +54,8 @@ export class AIService {
     socialLinks?: string[]
     existingBio?: string
   }): Promise<string> {
+    const ai = ensureOpenAI();
+
     const prompt = `
     Create a compelling and professional bio for a LinkTree page based on this information:
     
@@ -69,7 +76,7 @@ export class AIService {
     `
 
     try {
-      const response = await openai.chat.completions.create({
+      const response = await ai.chat.completions.create({
         model: 'gpt-4',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 300,
@@ -98,6 +105,8 @@ export class AIService {
     suggestedStyle: string
     category: string
   }> {
+    const ai = ensureOpenAI();
+
     const prompt = `
     Analyze this URL and generate optimized metadata for a LinkTree link:
     
@@ -114,7 +123,7 @@ export class AIService {
     `
 
     try {
-      const response = await openai.chat.completions.create({
+      const response = await ai.chat.completions.create({
         model: 'gpt-4',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 200,
@@ -150,6 +159,8 @@ export class AIService {
     text: string
     palette: string[]
   }> {
+    const ai = ensureOpenAI();
+
     const prompt = `
     Generate a cohesive color palette for a LinkTree page:
     
@@ -171,7 +182,7 @@ export class AIService {
     `
 
     try {
-      const response = await openai.chat.completions.create({
+      const response = await ai.chat.completions.create({
         model: 'gpt-4',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 300,
@@ -210,6 +221,8 @@ export class AIService {
     }>
     strategies: string[]
   }> {
+    const ai = ensureOpenAI();
+
     const prompt = `
     Generate content suggestions for a LinkTree page:
     
@@ -227,7 +240,7 @@ export class AIService {
     `
 
     try {
-      const response = await openai.chat.completions.create({
+      const response = await ai.chat.completions.create({
         model: 'gpt-4',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 800,
@@ -273,6 +286,8 @@ export class AIService {
       timeframe: string
     }
   }> {
+    const ai = ensureOpenAI();
+
     const prompt = `
     Analyze this LinkTree page performance and suggest improvements:
     
@@ -295,7 +310,7 @@ export class AIService {
     `
 
     try {
-      const response = await openai.chat.completions.create({
+      const response = await ai.chat.completions.create({
         model: 'gpt-4',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 600,
@@ -338,6 +353,8 @@ export class AIService {
     keywords: string[]
     recommendations: string[]
   }> {
+    const ai = ensureOpenAI();
+
     const prompt = `
     Generate SEO optimizations for this LinkTree page:
     
@@ -358,7 +375,7 @@ export class AIService {
     `
 
     try {
-      const response = await openai.chat.completions.create({
+      const response = await ai.chat.completions.create({
         model: 'gpt-4',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 400,
@@ -398,6 +415,8 @@ export class AIService {
       duration: string
     }>
   }> {
+    const ai = ensureOpenAI();
+
     const prompt = `
     Suggest A/B tests for this LinkTree page:
     
@@ -420,7 +439,7 @@ export class AIService {
     `
 
     try {
-      const response = await openai.chat.completions.create({
+      const response = await ai.chat.completions.create({
         model: 'gpt-4',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 600,
