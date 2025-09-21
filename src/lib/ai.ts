@@ -1,17 +1,29 @@
-import OpenAI from 'openai'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { prisma } from './prisma'
 
-// Não verificar a API key durante o build - só em runtime
-const openai = process.env.OPENAI_API_KEY ? new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-}) : null;
+// Inicializar Gemini só se a API key existir
+const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
 
-// Helper function to check if OpenAI is available
-function ensureOpenAI() {
-  if (!openai || !process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY is not configured. Please add it to your environment variables.');
+// Helper function to check if Gemini is available
+function ensureGemini() {
+  if (!genAI || !process.env.GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY is not configured. Please add it to your environment variables.');
   }
-  return openai;
+  return genAI.getGenerativeModel({ model: "gemini-pro" });
+}
+
+// Helper function to make Gemini API calls
+async function callGemini(prompt: string): Promise<string> {
+  const model = ensureGemini();
+  
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error('Gemini API Error:', error);
+    throw new Error('Failed to generate content with Gemini AI');
+  }
 }
 
 // Export individual functions for easier importing
@@ -54,8 +66,6 @@ export class AIService {
     socialLinks?: string[]
     existingBio?: string
   }): Promise<string> {
-    const ai = ensureOpenAI();
-
     const prompt = `
     Create a compelling and professional bio for a LinkTree page based on this information:
     
@@ -72,29 +82,28 @@ export class AIService {
     - Focus on value proposition
     - Make it memorable and clickable
     
-    Generate 3 different bio options and return them as a JSON array.
+    Generate 3 different bio options and return them as a JSON array like this:
+    ["Bio option 1", "Bio option 2", "Bio option 3"]
+    
+    Return ONLY the JSON array, no other text.
     `
 
     try {
-      const response = await ai.chat.completions.create({
-        model: 'gpt-4',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 300,
-        temperature: 0.7
-      })
-
-      const content = response.choices[0]?.message?.content
-      if (!content) throw new Error('No response from AI')
-
+      const content = await callGemini(prompt);
+      
       // Try to parse as JSON, fallback to single bio
       try {
-        return JSON.parse(content)
+        const parsed = JSON.parse(content.trim());
+        return Array.isArray(parsed) ? parsed : [parsed];
       } catch {
-        return [content.trim()]
+        // If JSON parsing fails, return as single bio
+        return [content.trim()];
       }
     } catch (error) {
-      console.error('AI Bio Generation Error:', error)
-      throw new Error('Failed to generate bio')
+      console.error('AI Bio Generation Error:', error);
+      // Return fallback bio
+      const fallbackName = userData.name || userData.username || 'User';
+      return [`🌟 ${fallbackName} | Creating amazing content daily ✨`];
     }
   }
 
@@ -105,8 +114,6 @@ export class AIService {
     suggestedStyle: string
     category: string
   }> {
-    const ai = ensureOpenAI();
-
     const prompt = `
     Analyze this URL and generate optimized metadata for a LinkTree link:
     
@@ -120,22 +127,23 @@ export class AIService {
     4. Category (social, business, creative, ecommerce, etc.)
     
     Return as JSON with keys: title, description, suggestedStyle, category
+    
+    Example:
+    {
+      "title": "My Portfolio",
+      "description": "Check out my latest projects and work",
+      "suggestedStyle": "glassmorphism",
+      "category": "creative"
+    }
+    
+    Return ONLY the JSON object, no other text.
     `
 
     try {
-      const response = await ai.chat.completions.create({
-        model: 'gpt-4',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 200,
-        temperature: 0.6
-      })
-
-      const content = response.choices[0]?.message?.content
-      if (!content) throw new Error('No response from AI')
-
-      return JSON.parse(content)
+      const content = await callGemini(prompt);
+      return JSON.parse(content.trim());
     } catch (error) {
-      console.error('AI Link Metadata Error:', error)
+      console.error('AI Link Metadata Error:', error);
       return {
         title: 'Check this out',
         description: 'Interesting content worth exploring',
@@ -159,8 +167,6 @@ export class AIService {
     text: string
     palette: string[]
   }> {
-    const ai = ensureOpenAI();
-
     const prompt = `
     Generate a cohesive color palette for a LinkTree page:
     
@@ -179,22 +185,25 @@ export class AIService {
     
     Return as JSON with hex color codes.
     Ensure WCAG AA compliance for text contrast.
+    
+    Example:
+    {
+      "primary": "#6366f1",
+      "secondary": "#8b5cf6",
+      "accent": "#f59e0b",
+      "background": "#ffffff",
+      "text": "#1f2937",
+      "palette": ["#6366f1", "#8b5cf6", "#f59e0b", "#ef4444", "#10b981"]
+    }
+    
+    Return ONLY the JSON object, no other text.
     `
 
     try {
-      const response = await ai.chat.completions.create({
-        model: 'gpt-4',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 300,
-        temperature: 0.7
-      })
-
-      const content = response.choices[0]?.message?.content
-      if (!content) throw new Error('No response from AI')
-
-      return JSON.parse(content)
+      const content = await callGemini(prompt);
+      return JSON.parse(content.trim());
     } catch (error) {
-      console.error('AI Color Palette Error:', error)
+      console.error('AI Color Palette Error:', error);
       return {
         primary: '#6366f1',
         secondary: '#8b5cf6',
@@ -221,8 +230,6 @@ export class AIService {
     }>
     strategies: string[]
   }> {
-    const ai = ensureOpenAI();
-
     const prompt = `
     Generate content suggestions for a LinkTree page:
     
@@ -237,22 +244,27 @@ export class AIService {
     
     Focus on conversion, engagement, and audience building.
     Return as JSON with 'links' and 'strategies' arrays.
+    
+    Example:
+    {
+      "links": [
+        {"title": "About Me", "description": "Learn my story", "type": "page"},
+        {"title": "Portfolio", "description": "See my work", "type": "creative"}
+      ],
+      "strategies": [
+        "Post consistently on social media",
+        "Engage with your community daily"
+      ]
+    }
+    
+    Return ONLY the JSON object, no other text.
     `
 
     try {
-      const response = await ai.chat.completions.create({
-        model: 'gpt-4',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 800,
-        temperature: 0.8
-      })
-
-      const content = response.choices[0]?.message?.content
-      if (!content) throw new Error('No response from AI')
-
-      return JSON.parse(content)
+      const content = await callGemini(prompt);
+      return JSON.parse(content.trim());
     } catch (error) {
-      console.error('AI Content Suggestions Error:', error)
+      console.error('AI Content Suggestions Error:', error);
       return {
         links: [
           { title: 'About Me', description: 'Learn more about my story', type: 'page' },
@@ -286,7 +298,8 @@ export class AIService {
       timeframe: string
     }
   }> {
-    const ai = ensureOpenAI();
+    const clickRate = pageData.analytics.views > 0 ? 
+      ((pageData.analytics.clicks / pageData.analytics.views) * 100).toFixed(2) : '0';
 
     const prompt = `
     Analyze this LinkTree page performance and suggest improvements:
@@ -295,9 +308,9 @@ export class AIService {
     - Total blocks: ${pageData.blocks.length}
     - Page views: ${pageData.analytics.views}
     - Total clicks: ${pageData.analytics.clicks}
-    - Click-through rate: ${((pageData.analytics.clicks / pageData.analytics.views) * 100).toFixed(2)}%
-    - Top performing blocks: ${pageData.analytics.topPerformingBlocks.join(', ')}
-    - Low performing blocks: ${pageData.analytics.lowPerformingBlocks.join(', ')}
+    - Click-through rate: ${clickRate}%
+    - Top performing blocks: ${pageData.analytics.topPerformingBlocks.join(', ') || 'None'}
+    - Low performing blocks: ${pageData.analytics.lowPerformingBlocks.join(', ') || 'None'}
     
     Block types: ${pageData.blocks.map(b => b.type).join(', ')}
     
@@ -307,22 +320,32 @@ export class AIService {
     3. Predicted impact of implementing changes
     
     Return as JSON with score, improvements array, and predictions object.
+    
+    Example:
+    {
+      "score": 75,
+      "improvements": [
+        {
+          "type": "important",
+          "title": "Optimize link order",
+          "description": "Move high-performing links to the top",
+          "impact": "Could increase clicks by 15-25%"
+        }
+      ],
+      "predictions": {
+        "potentialIncrease": "20-30%",
+        "timeframe": "2-4 weeks"
+      }
+    }
+    
+    Return ONLY the JSON object, no other text.
     `
 
     try {
-      const response = await ai.chat.completions.create({
-        model: 'gpt-4',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 600,
-        temperature: 0.5
-      })
-
-      const content = response.choices[0]?.message?.content
-      if (!content) throw new Error('No response from AI')
-
-      return JSON.parse(content)
+      const content = await callGemini(prompt);
+      return JSON.parse(content.trim());
     } catch (error) {
-      console.error('AI Performance Analysis Error:', error)
+      console.error('AI Performance Analysis Error:', error);
       return {
         score: 75,
         improvements: [
@@ -353,8 +376,6 @@ export class AIService {
     keywords: string[]
     recommendations: string[]
   }> {
-    const ai = ensureOpenAI();
-
     const prompt = `
     Generate SEO optimizations for this LinkTree page:
     
@@ -372,22 +393,23 @@ export class AIService {
     
     Focus on search visibility and click-through rates.
     Return as JSON.
+    
+    Example:
+    {
+      "title": "John Doe | Content Creator & Designer",
+      "description": "Discover John's latest projects, tutorials, and social content. Follow along for creative inspiration and behind-the-scenes content.",
+      "keywords": ["content creator", "designer", "portfolio", "creative"],
+      "recommendations": ["Add more descriptive titles to your links", "Include location-based keywords"]
+    }
+    
+    Return ONLY the JSON object, no other text.
     `
 
     try {
-      const response = await ai.chat.completions.create({
-        model: 'gpt-4',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 400,
-        temperature: 0.6
-      })
-
-      const content = response.choices[0]?.message?.content
-      if (!content) throw new Error('No response from AI')
-
-      return JSON.parse(content)
+      const content = await callGemini(prompt);
+      return JSON.parse(content.trim());
     } catch (error) {
-      console.error('AI SEO Optimization Error:', error)
+      console.error('AI SEO Optimization Error:', error);
       return {
         title: pageData.title || 'My LinkTree',
         description: pageData.description || 'All my important links in one place',
@@ -415,15 +437,13 @@ export class AIService {
       duration: string
     }>
   }> {
-    const ai = ensureOpenAI();
-
     const prompt = `
     Suggest A/B tests for this LinkTree page:
     
     Current performance:
-    - CTR: ${pageData.currentPerformance.ctr}%
-    - Bounce rate: ${pageData.currentPerformance.bounceRate}%
-    - Avg time on page: ${pageData.currentPerformance.avgTime}s
+    - CTR: ${pageData.currentPerformance.ctr || 0}%
+    - Bounce rate: ${pageData.currentPerformance.bounceRate || 0}%
+    - Avg time on page: ${pageData.currentPerformance.avgTime || 0}s
     
     Page has ${pageData.blocks.length} blocks
     Current theme: ${pageData.theme.category || 'default'}
@@ -436,22 +456,34 @@ export class AIService {
     5. Recommended test duration
     
     Return as JSON with tests array.
+    
+    Example:
+    {
+      "tests": [
+        {
+          "name": "Button Color Test",
+          "hypothesis": "Brighter button colors will increase click-through rates",
+          "variants": [
+            {
+              "name": "Bright Orange",
+              "changes": ["Change primary color to #ff6b35"],
+              "expectedImpact": "10-15% CTR increase"
+            }
+          ],
+          "priority": "medium",
+          "duration": "2 weeks"
+        }
+      ]
+    }
+    
+    Return ONLY the JSON object, no other text.
     `
 
     try {
-      const response = await ai.chat.completions.create({
-        model: 'gpt-4',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 600,
-        temperature: 0.7
-      })
-
-      const content = response.choices[0]?.message?.content
-      if (!content) throw new Error('No response from AI')
-
-      return JSON.parse(content)
+      const content = await callGemini(prompt);
+      return JSON.parse(content.trim());
     } catch (error) {
-      console.error('AI A/B Test Suggestions Error:', error)
+      console.error('AI A/B Test Suggestions Error:', error);
       return {
         tests: [
           {
