@@ -20,8 +20,21 @@ import Image from 'next/image'
 
 interface TemplateRendererProps {
   user: User & {
-    links: LinkType[]
-    socials: Social[]
+    pages: Array<{
+      id: string
+      title: string
+      description?: string
+      blocks: Array<{
+        id: string
+        type: string
+        title: string
+        data?: string
+        style?: string
+        isActive: boolean
+        clickCount: number
+        position: number
+      }>
+    }>
   }
   onLinkClick?: (linkId: string) => void
 }
@@ -56,12 +69,30 @@ export function TemplateRenderer({ user, onLinkClick }: TemplateRendererProps) {
     return <div>Template não encontrado</div>
   }
 
-  const handleLinkClick = async (link: LinkType) => {
+  // Pegar a primeira página do usuário
+  const page = user.pages?.[0]
+  if (!page) {
+    return <div>Nenhuma página encontrada</div>
+  }
+
+  // Separar blocks por tipo
+  const linkBlocks = page.blocks.filter(block => block.type === 'link' && block.isActive)
+  const socialBlocks = page.blocks.filter(block => block.type === 'social' && block.isActive)
+
+  const handleLinkClick = async (block: any) => {
     if (onLinkClick) {
-      onLinkClick(link.id)
+      onLinkClick(block.id)
     }
-    // Abrir link em nova aba
-    window.open(link.url, '_blank', 'noopener,noreferrer')
+    
+    // Parsear dados do block para obter URL
+    try {
+      const data = block.data ? JSON.parse(block.data) : {}
+      if (data.url) {
+        window.open(data.url, '_blank', 'noopener,noreferrer')
+      }
+    } catch (error) {
+      console.error('Erro ao processar link:', error)
+    }
   }
 
   return (
@@ -146,96 +177,101 @@ export function TemplateRenderer({ user, onLinkClick }: TemplateRendererProps) {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
             >
-              {user.links
-                .filter(link => link.isActive)
-                .sort((a, b) => a.order - b.order)
-                .map((link, index) => (
-                <motion.button
-                  key={link.id}
-                  onClick={() => handleLinkClick(link)}
-                  className={cn(
-                    template.styles.link,
-                    "flex items-center p-4 w-full text-left group"
-                  )}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ 
-                    duration: 0.4, 
-                    delay: 0.7 + (index * 0.1),
-                    type: "spring",
-                    stiffness: 100
-                  }}
-                  whileHover={{ 
-                    scale: template.customization.animations ? 1.02 : 1,
-                    y: template.customization.animations ? -2 : 0
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {/* Ícone */}
-                  <div className="mr-4 opacity-80 group-hover:opacity-100 transition-opacity">
-                    {link.icon && linkIcons[link.icon] ? 
-                      linkIcons[link.icon] : 
-                      <ExternalLink className="w-5 h-5" />
-                    }
-                  </div>
+              {linkBlocks
+                .sort((a, b) => a.position - b.position)
+                .map((block, index) => {
+                  const data = block.data ? JSON.parse(block.data) : {}
+                  return (
+                    <motion.button
+                      key={block.id}
+                      onClick={() => handleLinkClick(block)}
+                      className={cn(
+                        template.styles.link,
+                        "flex items-center p-4 w-full text-left group"
+                      )}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ 
+                        duration: 0.4, 
+                        delay: 0.7 + (index * 0.1),
+                        type: "spring",
+                        stiffness: 100
+                      }}
+                      whileHover={{ 
+                        scale: template.customization.animations ? 1.02 : 1,
+                        y: template.customization.animations ? -2 : 0
+                      }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      {/* Ícone */}
+                      <div className="mr-4 opacity-80 group-hover:opacity-100 transition-opacity">
+                        {data.icon && linkIcons[data.icon] ? 
+                          linkIcons[data.icon] : 
+                          <ExternalLink className="w-5 h-5" />
+                        }
+                      </div>
 
-                  {/* Conteúdo */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base truncate group-hover:text-opacity-100">
-                      {link.title}
-                    </h3>
-                    {link.description && (
-                      <p className="text-sm opacity-70 truncate mt-1">
-                        {link.description}
-                      </p>
-                    )}
-                  </div>
+                      {/* Conteúdo */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base truncate group-hover:text-opacity-100">
+                          {block.title}
+                        </h3>
+                        {data.description && (
+                          <p className="text-sm opacity-70 truncate mt-1">
+                            {data.description}
+                          </p>
+                        )}
+                      </div>
 
-                  {/* Contador de cliques */}
-                  <div className="text-xs opacity-50 ml-2">
-                    {link.clicks}
-                  </div>
-                </motion.button>
-              ))}
+                      {/* Contador de cliques */}
+                      <div className="text-xs opacity-50 ml-2">
+                        {block.clickCount}
+                      </div>
+                    </motion.button>
+                  )
+                })}
             </motion.div>
 
             {/* Redes Sociais */}
-            {user.socials.length > 0 && (
+            {socialBlocks.length > 0 && (
               <motion.div 
                 className="flex justify-center gap-4 mb-6"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
               >
-                {user.socials
-                  .filter(social => social.isActive)
-                  .map((social, index) => (
-                  <motion.a
-                    key={social.id}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cn(
-                      template.styles.social,
-                      "p-3 transition-all duration-300"
-                    )}
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ 
-                      delay: 1.1 + (index * 0.1),
-                      type: "spring",
-                      stiffness: 200
-                    }}
-                    whileHover={{ 
-                      scale: template.customization.animations ? 1.1 : 1,
-                      rotate: template.customization.animations ? 5 : 0
-                    }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    {socialIcons[social.platform.toLowerCase()] || 
-                     <ExternalLink className="w-5 h-5" />}
-                  </motion.a>
-                ))}
+                {socialBlocks
+                  .sort((a, b) => a.position - b.position)
+                  .map((block, index) => {
+                    const data = block.data ? JSON.parse(block.data) : {}
+                    return (
+                      <motion.a
+                        key={block.id}
+                        href={data.url || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(
+                          template.styles.social,
+                          "p-3 transition-all duration-300"
+                        )}
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ 
+                          delay: 1.1 + (index * 0.1),
+                          type: "spring",
+                          stiffness: 200
+                        }}
+                        whileHover={{ 
+                          scale: template.customization.animations ? 1.1 : 1,
+                          rotate: template.customization.animations ? 5 : 0
+                        }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        {data.platform && socialIcons[data.platform.toLowerCase()] || 
+                         <ExternalLink className="w-5 h-5" />}
+                      </motion.a>
+                    )
+                  })}
               </motion.div>
             )}
 

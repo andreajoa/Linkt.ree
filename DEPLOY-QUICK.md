@@ -125,3 +125,5 @@ npm run db:push
 
 **🎉 Sua aplicação LinkTree Pro está pronta para milhões de usuários!**
 
+
+

@@ -6,6 +6,7 @@ import { TemplateRenderer } from '@/components/templates/TemplateRenderer'
 import { prisma } from '@/lib/prisma'
 import { cache } from '@/lib/cache'
 import { redirect } from 'next/navigation'
+import { getSampleUserWithPages } from '@/lib/seed-data'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { 
@@ -34,7 +35,10 @@ export const metadata: Metadata = {
 }
 
 // Componente para usuários não autenticados
-function LandingPage() {
+async function LandingPage() {
+  // Mostrar dados de exemplo para demonstração
+  const sampleUser = await getSampleUserWithPages()
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Navigation */}
@@ -227,6 +231,28 @@ function LandingPage() {
         </div>
       </section>
 
+      {/* Demo Section */}
+      <section id="demo" className="px-6 py-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">
+              Veja como fica na prática
+            </h2>
+            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+              Esta é uma demonstração real de como sua página ficará
+            </p>
+          </div>
+          
+          <div className="max-w-md mx-auto">
+            <Suspense fallback={<div className="text-white text-center">Carregando demonstração...</div>}>
+              <TemplateRenderer 
+                user={sampleUser} 
+        />
+      </Suspense>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="px-6 py-20">
         <div className="max-w-4xl mx-auto text-center">
@@ -282,9 +308,11 @@ async function UserPage() {
       user = await prisma.user.findUnique({
         where: { id: session.user.id },
         include: {
-          links: true,
-          socials: true,
-          pages: true,
+          pages: {
+            include: {
+              blocks: true
+            }
+          }
         },
       })
       

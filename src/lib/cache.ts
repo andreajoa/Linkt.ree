@@ -140,3 +140,5 @@ export class CacheManager {
 // Export both the class and a default cache instance
 export { redis }
 export const cache = CacheManager; // Add this export for compatibility
+
+

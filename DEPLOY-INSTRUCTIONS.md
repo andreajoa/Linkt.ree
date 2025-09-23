@@ -105,3 +105,5 @@ Se ainda houver problemas, verifique:
 4. ✅ Domínio está funcionando
 
 **🚀 Sua aplicação LinkTree Pro está pronta para escalar para milhões de usuários!**
+
+
